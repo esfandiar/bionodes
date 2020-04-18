@@ -1,21 +1,23 @@
-from biograph.article import Article
-import pdfminer
-from pdfminer import high_level
-import requests
 import re
-from bs4 import BeautifulSoup
-from biograph.response_stream import ResponseStream
 from typing import List
+
+from bs4 import BeautifulSoup
 import nltk
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 from nltk.stem.wordnet import WordNetLemmatizer
+from pdfminer import high_level
+import requests
+
+from main.article import Article
+from main.response_stream import ResponseStream
 
 
 class Crawler:
     def __init__(self):
         nltk.download("stopwords")
         nltk.download("wordnet")
+        nltk.download("averaged_perceptron_tagger")
         self.stop_words = set(stopwords.words("english"))
         self.ps = PorterStemmer()
         self.lem = WordNetLemmatizer()
@@ -48,21 +50,29 @@ class Crawler:
             keywords = []
             if keywords_string:
                 keywords = [
-                    keyword.strip()
+                    keyword.strip().lower()
                     for keyword in keywords_string[0].split(";")
                     if keyword.strip()
                 ]
             title = link.find("span").text
             if not keywords:
-                clean_title = title
-                # clean_title = re.sub("[^a-zA-Z]", " ", title).lower()
+                clean_title = title.lower()
+                # Remove tags
                 clean_title = re.sub("&lt;/?.*?&gt;", " &lt;&gt; ", clean_title)
+                # Remove special characters and digits
                 clean_title = re.sub("(\\d|\\W)+", " ", clean_title)
                 keywords = clean_title.split()
+                # Remove the stop words
                 keywords = [
                     self.lem.lemmatize(word)
                     for word in keywords
                     if word not in self.stop_words
+                ]
+                # Tag the words and only take the nouns
+                tokens = nltk.word_tokenize(" ".join(keywords))
+                tagged = nltk.pos_tag(tokens)
+                keywords = [
+                    tag[0] for tag in tagged if tag[1] == "NN" and len(tag[1]) > 1
                 ]
 
             article = Article(
