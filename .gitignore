@@ -139,3 +139,5 @@ cython_debug/
 
 .idea
 settings.json
+
+.vscode/spellright.dict
