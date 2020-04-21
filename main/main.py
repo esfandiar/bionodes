@@ -9,8 +9,7 @@ logger.setLevel(logging.DEBUG)
 
 logger.info("Start crawling")
 
-crawler = Crawler()
-articles = crawler.crawl_and_get_articles_for_collection("epidemiology")
+articles = Crawler.crawl_and_get_articles_for_collection("epidemiology")
 
 for article in articles:
     query = DbRepository.create_relationship_for_article(article)

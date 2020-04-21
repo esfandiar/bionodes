@@ -45,12 +45,12 @@ class DbRepository:
     def create_relationship_for_article(article: Article):
         def execute_query(tx):
             query_list = [
-                "MERGE (k:keyword {name:'" + keyword.name + "'});"
+                "MERGE (k:keyword {name:'" + keyword.name.replace("'", "\\'") + "'});"
                 for keyword in article.keywords
             ]
             query_list.append(
                 "MERGE (k:article {title:'"
-                + article.title
+                + article.title.replace("'", "\\'")
                 + "',url:'"
                 + article.url
                 + "'});"
@@ -59,15 +59,15 @@ class DbRepository:
                 for j in range(i + 1, len(article.keywords)):
                     query = (
                         "MATCH (k1:keyword {name:'"
-                        + article.keywords[i].name
+                        + article.keywords[i].name.replace("'", "\\'")
                         + "'}), (k2:keyword {name:'"
-                        + article.keywords[j].name
+                        + article.keywords[j].name.replace("'", "\\'")
                         + "'}) CREATE (k1)-[:associated_with]->(k2);"
                     )
                     query_list.append(query)
                 query_list.append(
                     "MATCH (k:keyword {name:'"
-                    + article.keywords[i].name
+                    + article.keywords[i].name.replace("'", "\\'")
                     + "'}), (a:article {url:'"
                     + article.url
                     + "'}) CREATE (a)-[:has_keyword]->(k);"
