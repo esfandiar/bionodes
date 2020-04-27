@@ -8,7 +8,7 @@
       "name": "Main",
       "type": "python",
       "request": "launch",
-      "module": "main.main"
+      "module": "lib.main"
     }
   ]
 }

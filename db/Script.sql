@@ -31,3 +31,18 @@ CALL algo.shortestPath.stream(start, end, "cost")
 YIELD nodeId, cost
 MATCH (other:Loc) WHERE id(other) = nodeId
 RETURN other.name AS name, cost;
+
+-- Create index for full search
+CALL db.index.fulltext.createNodeIndex("articleTitleAndAbstract",["article"],["title", "abstract"]);
+
+-- Delete it in case needed
+CALL db.index.fulltext.drop('articleTitleAndAbstract');
+
+-- Sample full search text
+CALL db.index.fulltext.queryNodes("articleTitleAndAbstract", "temperature") YIELD node, score
+RETURN node.title, node.abstract, score;
+
+-- Sample query to find all keywords associted with covid
+match path = (k1:keyword {name:'covid'})-[:associated_with*1..2]->(k2:keyword)
+RETURN path;
+

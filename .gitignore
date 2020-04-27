@@ -141,3 +141,5 @@ cython_debug/
 settings.json
 
 .vscode/spellright.dict
+
+db-files/
