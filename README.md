@@ -2,6 +2,8 @@
 
 Find associations between medical articles and their keywords
 
+## DB
+
 Start Neo4j:
 
 ```shell
@@ -17,6 +19,14 @@ docker run --name neo4j \
 ```
 
 Neo4j Web UI: <http://localhost:7474>
+
+## API
+
+Freeze environment:
+
+```shell
+conda env export > environment.yml
+```
 
 ## Client
 

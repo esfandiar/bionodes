@@ -14,6 +14,8 @@ logger.info("Start crawling")
 # for article in articles:
 #     query = DbRepository.create_relationship_for_article(article)
 
-articles = DbRepository.get_articles_associated_with_keyword("covid", 10)
+# articles = DbRepository.get_articles_associated_with_keyword("covid", 10)
+
+keywords = DbRepository.get_keywords()
 
 logger.info("Finished crawling")
