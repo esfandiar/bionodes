@@ -72,6 +72,12 @@ class Crawler:
                 for keyword in keywords_string[0].split(";")
                 if keyword.strip()
             ]
+            if not keywords:
+                keywords = [
+                    keyword.strip().lower()
+                    for keyword in keywords_string[0].split(",")
+                    if keyword.strip()
+                ]
         title = link.find("span").text
         if not keywords:
             clean_title = title.lower()

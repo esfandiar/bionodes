@@ -1,20 +1,37 @@
 from flask import request
 from flask_restx import Resource
 
-from api.main.service.keyword_service import get_all_keywords
+from api.main.service.keyword_service import (
+    get_all_keywords,
+    get_connected_keywords,
+    get_path_between_keywords,
+    get_top_keywords,
+)
 from api.main.util.dto import KeywordDto
 
 api = KeywordDto.api
 _keyword = KeywordDto.keyword
+_keyword_article_count = KeywordDto.keyword_article_count
 
 
 @api.route("/")
-class KeywordList(Resource):
+class KeywordListController(Resource):
     @api.doc("list_of_keywords")
     @api.marshal_list_with(_keyword)
     def get(self):
         """List all keywords"""
         keywords = get_all_keywords()
+        return keywords
+
+
+@api.route("/top", defaults={"top_number": 10})
+@api.route("/top/<top_number>")
+class KeywordTopController(Resource):
+    @api.doc("Get top keywords")
+    @api.marshal_list_with(_keyword_article_count)
+    def get(self, top_number: int):
+        """Get top keywords"""
+        keywords = get_top_keywords(top_number)
         return keywords
 
     # @api.response(201, "User successfully created.")
@@ -24,6 +41,40 @@ class KeywordList(Resource):
     #     """Creates a new User """
     #     data = request.json
     #     return save_new_user(data=data)
+
+
+@api.route("/relation/<keyword1>/<keyword2>")
+@api.param("keyword1", "The first keyword")
+@api.param("keyword2", "The final keyword")
+@api.response(404, "Relationship not found.")
+class KeywordRelationController(Resource):
+    @api.doc("Get path between two keywords")
+    @api.marshal_with(_keyword)
+    def get(self, keyword1: str, keyword2: str):
+        """Get path between two keywords"""
+        keywords = get_path_between_keywords(keyword1, keyword2)
+        if not keywords:
+            api.abort(404)
+        else:
+            return keywords
+
+
+@api.route("/connections/<keyword>")
+@api.param("keyword", "Keyword for which we want to get all the other keywords")
+@api.param("max_level", "Maximum search level for keywords")
+@api.response(404, "Keyword not found")
+class KeywordConnectionsController(Resource):
+    @api.doc("Get the keywords connected to given keyword")
+    @api.marshal_with(_keyword)
+    def get(self, keyword: str):
+        """Get the keywords connected to given keyword"""
+        max_level = request.args.get("max_level")
+        max_level = 2 if not max_level else int(max_level)
+        keywords = get_connected_keywords(keyword, max_level)
+        if not keywords:
+            api.abort(404)
+        else:
+            return keywords
 
 
 # @api.route("/<public_id>")

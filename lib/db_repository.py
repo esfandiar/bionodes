@@ -60,6 +60,23 @@ class DbRepository:
         return keywords
 
     @staticmethod
+    def get_connected_keywords(keyword: str, max_level: int = 2) -> List[List[Keyword]]:
+        paths = []
+
+        def execute_query(tx):
+            for record in tx.run(
+                "match path = (k1:keyword {name:'covid'})-[:associated_with*1.."
+                + str(max_level)
+                + "]->(k2:keyword) RETURN path"
+            ):
+                paths.append([Keyword(name=node["name"]) for node in record[0].nodes])
+
+        with DbConnection.driver().session() as session:
+            session.read_transaction(execute_query)
+
+        return paths
+
+    @staticmethod
     def search_for_articles(search_phrase: str) -> List[Tuple[Article, int]]:
         articles = []
 
@@ -112,23 +129,6 @@ class DbRepository:
             session.read_transaction(execute_query)
 
         return articles
-
-    @staticmethod
-    def get_connected_keywords(keyword: str, max_level: int = 2) -> List[List[Keyword]]:
-        paths = []
-
-        def execute_query(tx):
-            for record in tx.run(
-                "match path = (k1:keyword {name:'covid'})-[:associated_with*1.."
-                + str(max_level)
-                + "]->(k2:keyword) RETURN path"
-            ):
-                paths.append([Keyword(name=node["name"]) for node in record[0].nodes])
-
-        with DbConnection.driver().session() as session:
-            session.read_transaction(execute_query)
-
-        return paths
 
     @staticmethod
     def create_relationship_for_article(article: Article):

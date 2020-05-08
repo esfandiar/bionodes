@@ -3,6 +3,8 @@ from flask import Blueprint
 
 from api.main.controller.keyword_controller import api as keyword_ns
 
+from api.main.controller.article_controller import api as article_ns
+
 blueprint = Blueprint("api", __name__)
 
 api = Api(
@@ -13,3 +15,4 @@ api = Api(
 )
 
 api.add_namespace(keyword_ns, path="/keyword")
+api.add_namespace(article_ns, path="/article")
