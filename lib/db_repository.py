@@ -65,9 +65,11 @@ class DbRepository:
 
         def execute_query(tx):
             for record in tx.run(
-                "match path = (k1:keyword {name:'covid'})-[:associated_with*1.."
+                "match path = (k1:keyword {name:'"
+                + keyword
+                + "'})-[:associated_with*1.."
                 + str(max_level)
-                + "]->(k2:keyword) RETURN path"
+                + "]-(k2:keyword) RETURN path"
             ):
                 paths.append([Keyword(name=node["name"]) for node in record[0].nodes])
 

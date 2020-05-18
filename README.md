@@ -28,6 +28,12 @@ Freeze environment:
 conda env export > environment.yml
 ```
 
+### Run API
+
+```shell
+/Users/esfandiar/anaconda3/envs/bionodes/bin/python manage.py run
+```
+
 ## Client
 
   ```yarn start```
