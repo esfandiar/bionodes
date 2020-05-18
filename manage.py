@@ -5,6 +5,7 @@ from flask_script import Manager
 
 from api import blueprint
 from api.main import create_app
+from lib.crawler import Crawler
 
 app = create_app(os.getenv("BOILERPLATE_ENV") or "dev")
 app.register_blueprint(blueprint)
@@ -16,6 +17,11 @@ manager = Manager(app)
 @manager.command
 def run():
     app.run()
+
+
+@manager.command
+def crawl(collection):
+    Crawler.crawl_and_save_articles_and_keywords(collection)
 
 
 @manager.command

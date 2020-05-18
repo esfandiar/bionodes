@@ -12,6 +12,7 @@ import requests
 
 from lib import constants
 from lib.article import Article
+from lib.db_repository import DbRepository
 from lib.keyword import Keyword
 from lib.response_stream import ResponseStream
 
@@ -130,3 +131,10 @@ class Crawler:
                 articles = executor.map(Crawler._crawl_and_get_article_for_url, links)
                 for article in articles:
                     yield article
+
+    @staticmethod
+    def crawl_and_save_articles_and_keywords(collection: str):
+        articles = Crawler.crawl_and_get_articles_for_collection(collection)
+
+        for article in articles:
+            DbRepository.create_relationship_for_article(article)

@@ -34,6 +34,18 @@ conda env export > environment.yml
 /Users/esfandiar/anaconda3/envs/bionodes/bin/python manage.py run
 ```
 
+### Crawl
+
+```shell
+/Users/esfandiar/anaconda3/envs/bionodes/bin/python manage.py crawl [collection]
+```
+
+Example:
+
+```shell
+/Users/esfandiar/anaconda3/envs/bionodes/bin/python manage.py crawl "epidemiology"
+```
+
 ## Client
 
   ```yarn start```
