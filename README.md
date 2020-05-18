@@ -22,7 +22,7 @@ Neo4j Web UI: <http://localhost:7474>
 
 ## API
 
-Freeze environment:
+### Freeze environment
 
 ```shell
 conda env export > environment.yml
@@ -31,18 +31,21 @@ conda env export > environment.yml
 ### Run API
 
 ```shell
+conda activate bionodes
 /Users/esfandiar/anaconda3/envs/bionodes/bin/python manage.py run
 ```
 
 ### Crawl
 
 ```shell
+conda activate bionodes
 /Users/esfandiar/anaconda3/envs/bionodes/bin/python manage.py crawl [collection]
 ```
 
 Example:
 
 ```shell
+conda activate bionodes
 /Users/esfandiar/anaconda3/envs/bionodes/bin/python manage.py crawl "epidemiology"
 ```
 

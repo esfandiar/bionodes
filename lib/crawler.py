@@ -113,14 +113,13 @@ class Crawler:
     @staticmethod
     def crawl_and_get_articles_for_collection(collection: str) -> Iterator[Article]:
         collection_url = f"{constants.MEDRXIV_URL}/collection/{collection}"
-        logger.info("Crawling %s ...", collection_url)
+        logger.warn("Crawling %s ...", collection_url)
         last_page = Crawler._get_last_page(collection_url)
-        logger.info("There are %d pages in this collection", last_page)
+        logger.warn("There are %d pages in this collection", last_page)
 
-        # for page in range(0, last_page):
-        for page in range(0, 2):
+        for page in range(0, last_page):
             url = collection_url if page == 0 else f"{collection_url}?page={page}"
-            logger.info("Crawling page %d of %d. Url: %s ...", page, last_page, url)
+            logger.warn("Crawling page %d of %d. Url: %s ...", page, last_page, url)
             res = requests.get(url)
             html = res.text
             soup = BeautifulSoup(html, "html.parser")

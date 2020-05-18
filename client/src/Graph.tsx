@@ -19,7 +19,7 @@ export const GraphPanel: React.FC<IGraphProps> = (props: IGraphProps) => {
   useEffect(() => {
     async function getGraphForKeyword() {
       const response = await fetch(
-        `http://localhost:5000/keyword/connections/${props.selectedKeyword}?max_level=2`
+        `http://localhost:5000/keyword/connections/${props.selectedKeyword}?max_level=1`
       );
       if (response.ok) {
         const returnedKeywordPaths: IKeyword[][] = await response.json();
