@@ -21,6 +21,7 @@ import NotificationsIcon from "@material-ui/icons/Notifications";
 import { KeyworPanel } from "./Keyword";
 import { Card, CardContent, CardHeader } from "@material-ui/core";
 import { GraphPanel } from "./Graph";
+import { ArticlePanel } from "./Article";
 
 function Copyright() {
   return (
@@ -163,9 +164,12 @@ export default function Dashboard() {
                 <CardHeader title="Graph"></CardHeader>
                 <CardContent>
                   <Paper className={fixedHeightPaper}>
-                    <GraphPanel selectedKeyword={selectedKeyword} onSelectedKeywordChanged={(keyword) =>
+                    <GraphPanel
+                      selectedKeyword={selectedKeyword}
+                      onSelectedKeywordChanged={(keyword) =>
                         setSelectedKeyboard(keyword)
-                      }></GraphPanel>
+                      }
+                    ></GraphPanel>
                   </Paper>
                 </CardContent>
               </Card>
@@ -175,7 +179,11 @@ export default function Dashboard() {
               <Card>
                 <CardHeader title="Articles"></CardHeader>
                 <CardContent>
-                  <Paper className={fixedHeightPaper}></Paper>
+                  <Paper className={fixedHeightPaper}>
+                    <ArticlePanel
+                      selectedKeyword={selectedKeyword}
+                    ></ArticlePanel>
+                  </Paper>
                 </CardContent>
               </Card>
             </Grid>
