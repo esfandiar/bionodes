@@ -100,9 +100,6 @@ const useStyles = makeStyles((theme) => ({
     overflow: "auto",
     flexDirection: "column",
   },
-  fixedHeight: {
-    height: 600,
-  },
 }));
 
 export default function Dashboard() {
@@ -115,7 +112,7 @@ export default function Dashboard() {
   const handleDrawerClose = () => {
     setOpen(false);
   };
-  const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
+  const fixedHeightPaper = clsx(classes.paper);
 
   return (
     <div className={classes.root}>
@@ -143,7 +140,7 @@ export default function Dashboard() {
         <Container maxWidth="lg" className={classes.container}>
           <Grid container spacing={3}>
             {/* Chart */}
-            <Grid item xs={12} md={3} lg={3}>
+            <Grid item xs={12} md={5} lg={5}>
               <Card>
                 <CardHeader title="Keywords"></CardHeader>
                 <CardContent>
@@ -159,23 +156,21 @@ export default function Dashboard() {
               </Card>
             </Grid>
             {/* Recent Deposits */}
-            <Grid item xs={12} md={6} lg={6}>
+            <Grid item xs={12} md={7} lg={7}>
               <Card>
                 <CardHeader title="Graph"></CardHeader>
                 <CardContent>
-                  <Paper className={fixedHeightPaper}>
-                    <GraphPanel
-                      selectedKeyword={selectedKeyword}
-                      onSelectedKeywordChanged={(keyword) =>
-                        setSelectedKeyboard(keyword)
-                      }
-                    ></GraphPanel>
-                  </Paper>
+                  <GraphPanel
+                    selectedKeyword={selectedKeyword}
+                    onSelectedKeywordChanged={(keyword) =>
+                      setSelectedKeyboard(keyword)
+                    }
+                  ></GraphPanel>
                 </CardContent>
               </Card>
             </Grid>
             {/* Recent Orders */}
-            <Grid item xs={12} md={3} lg={3}>
+            <Grid item xs={12} md={12} lg={12}>
               <Card>
                 <CardHeader title="Articles"></CardHeader>
                 <CardContent>

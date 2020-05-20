@@ -7,17 +7,38 @@ from lib.keyword import Keyword
 
 class DbRepository:
     @staticmethod
-    def get_keywords() -> List[Keyword]:
+    def get_keywords(page=0, page_size=0) -> List[Keyword]:
         keywords = []
 
         def execute_query(tx):
-            for record in tx.run("match (k:keyword) return k.name"):
-                keywords.append(Keyword(name=record["k.name"]))
+            skip_num = (page - 1) * page_size
+            page_query = f" skip {skip_num} limit {page_size}" if page else ""
+            query = (
+                "match (:article)-[:has_keyword]->(k:keyword)"
+                + " with k, count(k) as num order by num DESC"
+                + " return k, num"
+                + page_query
+            )
+            for record in tx.run(query):
+                keywords.append(Keyword(name=record[0]["name"]))
 
         with DbConnection.driver().session() as session:
             session.read_transaction(execute_query)
 
         return keywords
+
+    @staticmethod
+    def get_keywords_count() -> int:
+        result = []
+
+        def execute_query(tx):
+            for record in tx.run("match (k:keyword) return count(k)"):
+                result.append(record[0])
+
+        with DbConnection.driver().session() as session:
+            session.read_transaction(execute_query)
+
+        return result[0]
 
     @staticmethod
     def get_top_keywords(top_number: int) -> List[Tuple[Keyword, str]]:

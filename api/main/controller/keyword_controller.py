@@ -6,6 +6,7 @@ from api.main.service.keyword_service import (
     get_connected_keywords,
     get_path_between_keywords,
     get_top_keywords,
+    get_keywords_count,
 )
 from api.main.util.dto import KeywordDto
 
@@ -20,7 +21,11 @@ class KeywordListController(Resource):
     @api.marshal_list_with(_keyword)
     def get(self):
         """List all keywords"""
-        keywords = get_all_keywords()
+        page = request.args.get("page")
+        page_size = request.args.get("page_size")
+        page = 0 if not page else int(page)
+        page_size = 0 if not page_size else int(page_size)
+        keywords = get_all_keywords(page, page_size)
         return keywords
 
 
@@ -32,6 +37,15 @@ class KeywordTopController(Resource):
     def get(self, top_number: int):
         """Get top keywords"""
         keywords = get_top_keywords(top_number)
+        return keywords
+
+
+@api.route("/count")
+class KeywordCountController(Resource):
+    @api.doc("Get keywords count")
+    def get(self):
+        """Get keywords count"""
+        keywords = get_keywords_count()
         return keywords
 
     # @api.response(201, "User successfully created.")

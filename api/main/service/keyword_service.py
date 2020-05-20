@@ -1,8 +1,12 @@
 from lib.db_repository import DbRepository
 
 
-def get_all_keywords():
-    return DbRepository.get_keywords()
+def get_all_keywords(page: int, page_size: int):
+    return DbRepository.get_keywords(page, page_size)
+
+
+def get_keywords_count():
+    return DbRepository.get_keywords_count()
 
 
 def get_path_between_keywords(keyword1: str, keyword2: str):
