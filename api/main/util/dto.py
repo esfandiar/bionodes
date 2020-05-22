@@ -15,6 +15,10 @@ class KeywordDto:
             ),
         },
     )
+    keyword_count = api.model(
+        "keyword",
+        {"keyword": fields.Nested(keyword), "count": fields.Float(required=True)},
+    )
 
 
 class ArticleDto:

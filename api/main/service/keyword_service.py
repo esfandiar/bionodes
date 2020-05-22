@@ -24,3 +24,7 @@ def get_top_keywords(top_number):
 
 def get_connected_keywords(keyword: str, max_level: int):
     return DbRepository.get_connected_keywords(keyword, max_level)
+
+
+def search_for_keywords(search_phrase: str, page: int, page_size: int):
+    return DbRepository.search_for_keywords(search_phrase, page, page_size)

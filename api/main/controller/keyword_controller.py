@@ -4,9 +4,10 @@ from flask_restx import Resource
 from api.main.service.keyword_service import (
     get_all_keywords,
     get_connected_keywords,
+    get_keywords_count,
     get_path_between_keywords,
     get_top_keywords,
-    get_keywords_count,
+    search_for_keywords,
 )
 from api.main.util.dto import KeywordDto
 
@@ -15,7 +16,7 @@ _keyword = KeywordDto.keyword
 _keyword_article_count = KeywordDto.keyword_article_count
 
 
-@api.route("/")
+@api.route("/all")
 class KeywordListController(Resource):
     @api.doc("list_of_keywords")
     @api.marshal_list_with(_keyword)
@@ -46,6 +47,20 @@ class KeywordCountController(Resource):
     def get(self):
         """Get keywords count"""
         keywords = get_keywords_count()
+        return keywords
+
+
+@api.route("/search/<search_phrase>")
+class KeywordSearchController(Resource):
+    @api.doc("Search for keywords")
+    @api.marshal_list_with(_keyword)
+    def get(self, search_phrase):
+        """Search for keywords"""
+        page = request.args.get("page")
+        page_size = request.args.get("page_size")
+        page = 0 if not page else int(page)
+        page_size = 0 if not page_size else int(page_size)
+        keywords = search_for_keywords(search_phrase, page, page_size)
         return keywords
 
     # @api.response(201, "User successfully created.")

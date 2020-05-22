@@ -59,6 +59,24 @@ class DbRepository:
         return keywords
 
     @staticmethod
+    def search_for_keywords(search_phrase: str, page=0, page_size=0) -> List[Keyword]:
+        keywords = []
+
+        def execute_query(tx):
+            skip_num = (page - 1) * page_size
+            page_query = f" skip {skip_num} limit {page_size}" if page else ""
+            for record in tx.run(
+                f"match (k:keyword) where k.name contains '{search_phrase}' return k"
+                + page_query
+            ):
+                keywords.append(Keyword(name=record[0]["name"]))
+
+        with DbConnection.driver().session() as session:
+            session.read_transaction(execute_query)
+
+        return keywords
+
+    @staticmethod
     def get_path_between_keywords(keyword1: str, keyword2: str) -> List[Keyword]:
         keywords = []
 

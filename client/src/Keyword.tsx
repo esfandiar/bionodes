@@ -1,6 +1,7 @@
 import {
   AppBar,
   FormControl,
+  IconButton,
   Input,
   InputAdornment,
   InputLabel,
@@ -12,9 +13,12 @@ import {
   Tabs,
 } from "@material-ui/core";
 import { makeStyles, Theme } from "@material-ui/core/styles";
-import { GroupWork, SearchOutlined, Timeline } from "@material-ui/icons";
+import { Clear, GroupWork, SearchOutlined, Timeline } from "@material-ui/icons";
 import { Alert, Pagination } from "@material-ui/lab";
 import React, { useEffect, useState } from "react";
+import { Subject } from "rxjs";
+import { fromFetch } from "rxjs/fetch";
+import { debounceTime, switchMap, take } from "rxjs/operators";
 
 export interface IKeyword {
   name: string;
@@ -87,51 +91,71 @@ export const KeyworPanel: React.FC<IKeywordPanelProps> = (
   const [searchValue, setSearchValue] = useState("");
   const [page, setPage] = useState(1);
   const [pageCount, setPageCount] = useState(10);
+  const [searchPhrase$] = useState(new Subject<string>());
   const handlePageChange = (
-    event: React.ChangeEvent<unknown>,
+    _event: React.ChangeEvent<unknown>,
     value: number
   ) => {
     setPage(value);
   };
 
   const handleTabChange = (
-    event: React.ChangeEvent<{}>,
+    _event: React.ChangeEvent<{}>,
     newTabValue: number
   ) => {
     setTabValue(newTabValue);
   };
 
+  useEffect(() => {
+    const subscription = searchPhrase$
+      .pipe(debounceTime(300))
+      .subscribe((searchPhrase) => {
+        changeSearchPhrase(searchPhrase);
+      });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const changeSearchPhrase = (searchPhrase: string) => {
+    if (searchPhrase && searchPhrase.length) {
+      fromFetch(
+        `http://localhost:5000/keyword/search/${searchPhrase}?page=${page}&page_size=10`
+      )
+        .pipe(switchMap((response) => response.json()))
+        .pipe(take(1))
+        .subscribe((returnedKeywords) => {
+          setKeywords(returnedKeywords);
+        });
+    } else {
+      populateKeywords();
+    }
+  };
+
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(event.target.value);
+    searchPhrase$.next(event.target.value);
+  };
+
+  const handleClickClearSearch = () => {
+    setSearchValue("");
+    changeSearchPhrase("");
   };
 
   useEffect(() => {
-    async function getKeywords() {
-      const response = await fetch(
-        `http://localhost:5000/keyword?page=${page}&page_size=10`
-      );
-      if (response.ok) {
-        const returnedKeywords: IKeyword[] = await response.json();
-        setKeywords(returnedKeywords);
-      } else {
-        console.log(response);
-      }
-    }
-    getKeywords();
-  }, [page]);
-
-  useEffect(() => {
-    async function getKeywordsCount() {
-      const response = await fetch("http://localhost:5000/keyword/count");
-      if (response.ok) {
-        const keywordCount: number = await response.json();
+    const subscription = fromFetch("http://localhost:5000/keyword/count")
+      .pipe(switchMap((response) => response.json()))
+      .subscribe((keywordCount: number) => {
         setPageCount(Math.ceil(keywordCount / 10));
-      } else {
-        console.log(response);
-      }
-    }
-    getKeywordsCount();
+        populateKeywords();
+      });
+    return () => subscription.unsubscribe();
   }, []);
+
+  const populateKeywords = () => {
+    fromFetch(`http://localhost:5000/keyword/all?page=${page}&page_size=10`)
+      .pipe(switchMap((response) => response.json()))
+      .pipe(take(1))
+      .subscribe((returnedKeywords) => setKeywords(returnedKeywords));
+  };
 
   return (
     <div>
@@ -163,10 +187,21 @@ export const KeyworPanel: React.FC<IKeywordPanelProps> = (
           <InputLabel htmlFor="standard-adornment-search">Search</InputLabel>
           <Input
             id="standard-adornment-search"
+            value={searchValue}
             onChange={handleSearchChange}
             startAdornment={
               <InputAdornment position="start">
                 <SearchOutlined />
+              </InputAdornment>
+            }
+            endAdornment={
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="clear keyword search"
+                  onClick={handleClickClearSearch}
+                >
+                  <Clear />
+                </IconButton>
               </InputAdornment>
             }
           />
