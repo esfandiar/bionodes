@@ -13,13 +13,14 @@ from api.main.util.dto import KeywordDto
 
 api = KeywordDto.api
 _keyword = KeywordDto.keyword
+_keyword_count = KeywordDto.keyword_count
 _keyword_article_count = KeywordDto.keyword_article_count
 
 
 @api.route("/all")
 class KeywordListController(Resource):
     @api.doc("list_of_keywords")
-    @api.marshal_list_with(_keyword)
+    @api.marshal_list_with(_keyword_count)
     def get(self):
         """List all keywords"""
         page = request.args.get("page")
@@ -53,7 +54,7 @@ class KeywordCountController(Resource):
 @api.route("/search/<search_phrase>")
 class KeywordSearchController(Resource):
     @api.doc("Search for keywords")
-    @api.marshal_list_with(_keyword)
+    @api.marshal_list_with(_keyword_count)
     def get(self, search_phrase):
         """Search for keywords"""
         page = request.args.get("page")

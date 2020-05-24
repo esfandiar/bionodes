@@ -15,7 +15,7 @@ import {
 import { makeStyles, Theme } from "@material-ui/core/styles";
 import { Clear, GroupWork, SearchOutlined, Timeline } from "@material-ui/icons";
 import { Alert, Pagination } from "@material-ui/lab";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Subject } from "rxjs";
 import { fromFetch } from "rxjs/fetch";
 import { debounceTime, switchMap, take } from "rxjs/operators";
@@ -68,7 +68,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     display: "flex",
     overflow: "auto",
     flexDirection: "column",
-    height: 500,
+    height: 600,
   },
   info: {
     marginTop: 5,
@@ -92,11 +92,41 @@ export const KeyworPanel: React.FC<IKeywordPanelProps> = (
   const [page, setPage] = useState(1);
   const [pageCount, setPageCount] = useState(10);
   const [searchPhrase$] = useState(new Subject<string>());
+  const prevPageRef = useRef<number>(1);
+
+  const populateKeywordsBySearchPhrase = (
+    searchPhrase: string,
+    pageNum: number
+  ) => {
+    if (searchPhrase && searchPhrase.length) {
+      fromFetch(
+        `http://localhost:5000/keyword/search/${searchPhrase}?page=${pageNum}&page_size=10`
+      )
+        .pipe(switchMap((response) => response.json()))
+        .pipe(take(1))
+        .subscribe((returnedKeywordsCount) => {
+          setPageCount(Math.ceil(returnedKeywordsCount.count / 10));
+          setKeywords(returnedKeywordsCount.keyword);
+        });
+    } else {
+      fromFetch(
+        `http://localhost:5000/keyword/all?page=${pageNum}&page_size=10`
+      )
+        .pipe(switchMap((response) => response.json()))
+        .pipe(take(1))
+        .subscribe((returnedKeywordsCount) => {
+          setPageCount(Math.ceil(returnedKeywordsCount.count / 10));
+          setKeywords(returnedKeywordsCount.keyword);
+        });
+    }
+  };
+
   const handlePageChange = (
     _event: React.ChangeEvent<unknown>,
     value: number
   ) => {
     setPage(value);
+    populateKeywordsBySearchPhrase(searchValue, value);
   };
 
   const handleTabChange = (
@@ -106,30 +136,6 @@ export const KeyworPanel: React.FC<IKeywordPanelProps> = (
     setTabValue(newTabValue);
   };
 
-  useEffect(() => {
-    const subscription = searchPhrase$
-      .pipe(debounceTime(300))
-      .subscribe((searchPhrase) => {
-        changeSearchPhrase(searchPhrase);
-      });
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const changeSearchPhrase = (searchPhrase: string) => {
-    if (searchPhrase && searchPhrase.length) {
-      fromFetch(
-        `http://localhost:5000/keyword/search/${searchPhrase}?page=${page}&page_size=10`
-      )
-        .pipe(switchMap((response) => response.json()))
-        .pipe(take(1))
-        .subscribe((returnedKeywords) => {
-          setKeywords(returnedKeywords);
-        });
-    } else {
-      populateKeywords();
-    }
-  };
-
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(event.target.value);
     searchPhrase$.next(event.target.value);
@@ -137,25 +143,24 @@ export const KeyworPanel: React.FC<IKeywordPanelProps> = (
 
   const handleClickClearSearch = () => {
     setSearchValue("");
-    changeSearchPhrase("");
+    const pageNum = 1;
+    setPage(pageNum);
+    populateKeywordsBySearchPhrase("", pageNum);
   };
 
   useEffect(() => {
-    const subscription = fromFetch("http://localhost:5000/keyword/count")
-      .pipe(switchMap((response) => response.json()))
-      .subscribe((keywordCount: number) => {
-        setPageCount(Math.ceil(keywordCount / 10));
-        populateKeywords();
+    populateKeywordsBySearchPhrase("", 1);
+    const searchSubscription = searchPhrase$
+      .pipe(debounceTime(300))
+      .subscribe((searchPhrase) => {
+        const pageNum = 1;
+        setPage(pageNum);
+        populateKeywordsBySearchPhrase(searchPhrase, pageNum);
       });
-    return () => subscription.unsubscribe();
+    return () => {
+      searchSubscription.unsubscribe();
+    };
   }, []);
-
-  const populateKeywords = () => {
-    fromFetch(`http://localhost:5000/keyword/all?page=${page}&page_size=10`)
-      .pipe(switchMap((response) => response.json()))
-      .pipe(take(1))
-      .subscribe((returnedKeywords) => setKeywords(returnedKeywords));
-  };
 
   return (
     <div>

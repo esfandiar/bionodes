@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 from lib.article import Article
 from lib.db_connection import DbConnection
@@ -7,25 +7,30 @@ from lib.keyword import Keyword
 
 class DbRepository:
     @staticmethod
-    def get_keywords(page=0, page_size=0) -> List[Keyword]:
-        keywords = []
+    def get_keywords(page=0, page_size=0) -> Dict:
+        keywords_count = {}
 
         def execute_query(tx):
             skip_num = (page - 1) * page_size
             page_query = f" skip {skip_num} limit {page_size}" if page else ""
             query = (
-                "match (:article)-[:has_keyword]->(k:keyword)"
-                + " with k, count(k) as num order by num DESC"
-                + " return k, num"
+                "match (k:keyword)"
+                + " with count(k) as total"
+                + " match (:article)-[:has_keyword]->(k:keyword)"
+                + " with k, count(k) as num, total order by num DESC"
+                + " return k, total"
                 + page_query
             )
+            keywords = []
             for record in tx.run(query):
                 keywords.append(Keyword(name=record[0]["name"]))
+                keywords_count["count"] = record[1]
+            keywords_count["keyword"] = keywords
 
         with DbConnection.driver().session() as session:
             session.read_transaction(execute_query)
 
-        return keywords
+        return keywords_count
 
     @staticmethod
     def get_keywords_count() -> int:
@@ -59,22 +64,29 @@ class DbRepository:
         return keywords
 
     @staticmethod
-    def search_for_keywords(search_phrase: str, page=0, page_size=0) -> List[Keyword]:
-        keywords = []
+    def search_for_keywords(search_phrase: str, page=0, page_size=0) -> Dict:
+        keywords_count = {}
 
         def execute_query(tx):
             skip_num = (page - 1) * page_size
             page_query = f" skip {skip_num} limit {page_size}" if page else ""
-            for record in tx.run(
-                f"match (k:keyword) where k.name contains '{search_phrase}' return k"
+            query = (
+                f"match (k:keyword) where k.name contains '{search_phrase}'"
+                + " with count(k) as total"
+                + f" match (k:keyword) where k.name contains '{search_phrase}'"
+                + " return k, total"
                 + page_query
-            ):
+            )
+            keywords = []
+            for record in tx.run(query):
                 keywords.append(Keyword(name=record[0]["name"]))
+                keywords_count["count"] = record[1]
+            keywords_count["keyword"] = keywords
 
         with DbConnection.driver().session() as session:
             session.read_transaction(execute_query)
 
-        return keywords
+        return keywords_count
 
     @staticmethod
     def get_path_between_keywords(keyword1: str, keyword2: str) -> List[Keyword]:
