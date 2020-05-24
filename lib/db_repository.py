@@ -46,24 +46,6 @@ class DbRepository:
         return result[0]
 
     @staticmethod
-    def get_top_keywords(top_number: int) -> List[Tuple[Keyword, str]]:
-        keywords = []
-
-        def execute_query(tx):
-            for record in tx.run(
-                "match (:article)-[:has_keyword]->(k:keyword)"
-                + " with k, count(k) as num order by num DESC"
-                + " return k, num"
-                + f" limit {top_number}"
-            ):
-                keywords.append((Keyword(name=record[0]["name"]), record[1]))
-
-        with DbConnection.driver().session() as session:
-            session.read_transaction(execute_query)
-
-        return keywords
-
-    @staticmethod
     def search_for_keywords(search_phrase: str, page=0, page_size=0) -> Dict:
         keywords_count = {}
 
@@ -214,8 +196,6 @@ class DbRepository:
                     + article.url
                     + "'}) CREATE (a)-[:has_keyword]->(k);"
                 )
-
-            # query = "\n".join(query_list)
 
             for query in query_list:
                 tx.run(query)

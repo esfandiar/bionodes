@@ -1,18 +1,15 @@
-from flask_restx import Resource, reqparse
 from flask import request
+from flask_restx import Resource, reqparse
 
 from api.main.service.article_service import (
-    search_for_articles,
     get_articles_associated_with_keyword,
+    search_for_articles,
 )
 from api.main.util.dto import ArticleDto
 
 api = ArticleDto.api
 _article = ArticleDto.article
 _article_score = ArticleDto.article_score
-
-# parser = reqparse.RequestParser()
-# parser.add_argument('max_level', type=int)
 
 
 @api.route("/search/<search_phrase>")

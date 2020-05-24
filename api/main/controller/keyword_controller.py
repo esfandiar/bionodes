@@ -6,7 +6,6 @@ from api.main.service.keyword_service import (
     get_connected_keywords,
     get_keywords_count,
     get_path_between_keywords,
-    get_top_keywords,
     search_for_keywords,
 )
 from api.main.util.dto import KeywordDto
@@ -14,7 +13,6 @@ from api.main.util.dto import KeywordDto
 api = KeywordDto.api
 _keyword = KeywordDto.keyword
 _keyword_count = KeywordDto.keyword_count
-_keyword_article_count = KeywordDto.keyword_article_count
 
 
 @api.route("/all")
@@ -28,17 +26,6 @@ class KeywordListController(Resource):
         page = 0 if not page else int(page)
         page_size = 0 if not page_size else int(page_size)
         keywords = get_all_keywords(page, page_size)
-        return keywords
-
-
-@api.route("/top", defaults={"top_number": 10})
-@api.route("/top/<top_number>")
-class KeywordTopController(Resource):
-    @api.doc("Get top keywords")
-    @api.marshal_list_with(_keyword_article_count)
-    def get(self, top_number: int):
-        """Get top keywords"""
-        keywords = get_top_keywords(top_number)
         return keywords
 
 
@@ -63,14 +50,6 @@ class KeywordSearchController(Resource):
         page_size = 0 if not page_size else int(page_size)
         keywords = search_for_keywords(search_phrase, page, page_size)
         return keywords
-
-    # @api.response(201, "User successfully created.")
-    # @api.doc("create a new user")
-    # @api.expect(_user, validate=True)
-    # def post(self):
-    #     """Creates a new User """
-    #     data = request.json
-    #     return save_new_user(data=data)
 
 
 @api.route("/relation/<keyword1>/<keyword2>")
@@ -105,18 +84,3 @@ class KeywordConnectionsController(Resource):
             api.abort(404)
         else:
             return keywords
-
-
-# @api.route("/<public_id>")
-# @api.param("public_id", "The User identifier")
-# @api.response(404, "User not found.")
-# class User(Resource):
-#     @api.doc("get a user")
-#     @api.marshal_with(_user)
-#     def get(self, public_id):
-#         """get a user given its identifier"""
-#         user = get_a_user(public_id)
-#         if not user:
-#             api.abort(404)
-#         else:
-#             return user
