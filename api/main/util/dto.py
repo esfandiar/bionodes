@@ -31,10 +31,14 @@ class ArticleDto:
             "abstract": fields.String(
                 required=False, description="Abstract for article"
             ),
-            "keywords": fields.List(fields.Nested(KeywordDto)),
+            "keywords": fields.Nested(KeywordDto.keyword),
         },
     )
     article_score = api.model(
         "article",
         {"article": fields.Nested(article), "score": fields.Float(required=True)},
+    )
+    article_count = api.model(
+        "article",
+        {"articles": fields.Nested(article), "count": fields.Integer(required=True)},
     )

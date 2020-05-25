@@ -16,8 +16,8 @@ class DbRepository:
             query = (
                 "match (k:keyword)"
                 + " with count(k) as total"
-                + " match (:article)-[:has_keyword]->(k:keyword)"
-                + " with k, count(k) as num, total order by num DESC"
+                + " match (:article)-[r:has_keyword]->(k:keyword)"
+                + " with k, count(r) as num, total order by num DESC"
                 + " return k, total"
                 + page_query
             )
@@ -31,19 +31,6 @@ class DbRepository:
             session.read_transaction(execute_query)
 
         return keywords_count
-
-    @staticmethod
-    def get_keywords_count() -> int:
-        result = []
-
-        def execute_query(tx):
-            for record in tx.run("match (k:keyword) return count(k)"):
-                result.append(record[0])
-
-        with DbConnection.driver().session() as session:
-            session.read_transaction(execute_query)
-
-        return result[0]
 
     @staticmethod
     def search_for_keywords(search_phrase: str, page=0, page_size=0) -> Dict:
@@ -139,31 +126,47 @@ class DbRepository:
         return articles
 
     @staticmethod
-    def get_articles_associated_with_keyword(keyword: str, limit: int) -> List[Article]:
-        articles = []
+    def get_articles_associated_with_keyword(
+        keywords: List[str], page=0, page_size=0
+    ) -> Dict:
+        articles_count = {}
+        where_clause = " or ".join([f"k.name='{keyword}'" for keyword in keywords])
 
         def execute_query(tx):
-            for record in tx.run(
-                "match (a:article)-[:has_keyword]->(k:keyword {name:'"
-                + keyword
-                + "'})"
-                + " with a, count(k) as num order by num DESC"
-                + f" return a limit {limit}"
-            ):
+            skip_num = (page - 1) * page_size
+            page_query = f" skip {skip_num} limit {page_size}" if page else ""
+            query = (
+                "match (a:article)-[r:has_keyword]->(k:keyword)"
+                + f" where {where_clause}"
+                + " with count(distinct a) as total"
+                + " match (a:article)-[r:has_keyword]->(k:keyword)"
+                + f" where {where_clause}"
+                + " with a, count(distinct k.name) as num, collect(k) as keywords, total order by num DESC"
+                + f" return a, keywords, total"
+                + page_query
+            )
+            articles = []
+            for record in tx.run(query):
                 article_record = record["a"]
+                unique_keywords = set(
+                    [keyword["name"] for keyword in record["keywords"]]
+                )
+                keywords = [(Keyword(name=keyword)) for keyword in unique_keywords]
                 articles.append(
                     Article(
                         url=article_record["url"],
                         title=article_record["title"],
                         abstract=article_record["abstract"],
-                        keywords=[],
+                        keywords=keywords,
                     )
                 )
+                articles_count["count"] = record["total"]
+            articles_count["articles"] = articles
 
         with DbConnection.driver().session() as session:
             session.read_transaction(execute_query)
 
-        return articles
+        return articles_count
 
     @staticmethod
     def create_relationship_for_article(article: Article):

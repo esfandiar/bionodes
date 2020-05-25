@@ -22,6 +22,7 @@ import { KeyworPanel } from "./Keyword";
 import { Card, CardContent, CardHeader } from "@material-ui/core";
 import { GraphPanel } from "./Graph";
 import { ArticlePanel } from "./Article";
+import { SelectedKeywordPanel } from "./SelectedKeyword";
 
 function Copyright() {
   return (
@@ -105,7 +106,7 @@ const useStyles = makeStyles((theme) => ({
 export default function Dashboard() {
   const classes = useStyles();
   const [open, setOpen] = React.useState(true);
-  const [selectedKeyword, setSelectedKeyboard] = React.useState(null);
+  const [selectedKeywords, setSelectedKeywords] = React.useState([]);
   const handleDrawerOpen = () => {
     setOpen(true);
   };
@@ -113,6 +114,18 @@ export default function Dashboard() {
     setOpen(false);
   };
   const fixedHeightPaper = clsx(classes.paper);
+
+  const addKeyboard = (keyword) => {
+    if (!selectedKeywords.includes(keyword)) {
+      setSelectedKeywords([...selectedKeywords, keyword]);
+    }
+  };
+
+  const removeKeyword = (keyword) => {
+    setSelectedKeywords(
+      selectedKeywords.filter((currentKeyword) => currentKeyword != keyword)
+    );
+  };
 
   return (
     <div className={classes.root}>
@@ -144,27 +157,29 @@ export default function Dashboard() {
               <Card>
                 <CardHeader title="Keywords"></CardHeader>
                 <CardContent>
-                  <Paper className={fixedHeightPaper}>
-                    <KeyworPanel
-                      selectedKeyword={selectedKeyword}
-                      onSelectedKeywordChanged={(keyword) =>
-                        setSelectedKeyboard(keyword)
-                      }
-                    ></KeyworPanel>
-                  </Paper>
+                  <KeyworPanel
+                    selectedKeywords={selectedKeywords}
+                    onAddKeyword={(keyword) => addKeyboard(keyword)}
+                  ></KeyworPanel>
                 </CardContent>
               </Card>
             </Grid>
-            {/* Recent Deposits */}
             <Grid item xs={12} md={7} lg={7}>
+              <Card>
+                <CardHeader title="Selected Keywords"></CardHeader>
+                <CardContent>
+                  <SelectedKeywordPanel
+                    keywords={selectedKeywords}
+                    onRemoveKeyword={(keyword) => removeKeyword(keyword)}
+                  ></SelectedKeywordPanel>
+                </CardContent>
+              </Card>
               <Card>
                 <CardHeader title="Graph"></CardHeader>
                 <CardContent>
                   <GraphPanel
-                    selectedKeyword={selectedKeyword}
-                    onSelectedKeywordChanged={(keyword) =>
-                      setSelectedKeyboard(keyword)
-                    }
+                    selectedKeywords={selectedKeywords}
+                    onAddKeyboard={(keyword) => addKeyboard(keyword)}
                   ></GraphPanel>
                 </CardContent>
               </Card>
@@ -176,7 +191,7 @@ export default function Dashboard() {
                 <CardContent>
                   <Paper className={fixedHeightPaper}>
                     <ArticlePanel
-                      selectedKeyword={selectedKeyword}
+                      selectedKeywords={selectedKeywords}
                     ></ArticlePanel>
                   </Paper>
                 </CardContent>

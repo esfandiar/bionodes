@@ -1,3 +1,5 @@
+from typing import List
+
 from lib.db_repository import DbRepository
 
 
@@ -9,5 +11,7 @@ def search_for_articles(search_phrase: str):
     return articles_dto
 
 
-def get_articles_associated_with_keyword(keyword: str, limit: int):
-    return DbRepository.get_articles_associated_with_keyword(keyword, limit)
+def get_articles_associated_with_keyword(
+    keywords: List[str], page: int, page_size: int
+):
+    return DbRepository.get_articles_associated_with_keyword(keywords, page, page_size)

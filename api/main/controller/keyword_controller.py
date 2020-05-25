@@ -4,7 +4,6 @@ from flask_restx import Resource
 from api.main.service.keyword_service import (
     get_all_keywords,
     get_connected_keywords,
-    get_keywords_count,
     get_path_between_keywords,
     search_for_keywords,
 )
@@ -26,15 +25,6 @@ class KeywordListController(Resource):
         page = 0 if not page else int(page)
         page_size = 0 if not page_size else int(page_size)
         keywords = get_all_keywords(page, page_size)
-        return keywords
-
-
-@api.route("/count")
-class KeywordCountController(Resource):
-    @api.doc("Get keywords count")
-    def get(self):
-        """Get keywords count"""
-        keywords = get_keywords_count()
         return keywords
 
 
@@ -79,7 +69,8 @@ class KeywordConnectionsController(Resource):
         """Get the keywords connected to given keyword"""
         max_level = request.args.get("max_level")
         max_level = 2 if not max_level else int(max_level)
-        keywords = get_connected_keywords(keyword, max_level)
+        keywords = keyword.split(",")
+        keywords = get_connected_keywords(keywords, max_level)
         if not keywords:
             api.abort(404)
         else:

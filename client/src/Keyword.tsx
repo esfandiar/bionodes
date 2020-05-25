@@ -1,5 +1,4 @@
 import {
-  AppBar,
   FormControl,
   IconButton,
   Input,
@@ -9,13 +8,11 @@ import {
   ListItem,
   ListItemText,
   Paper,
-  Tab,
-  Tabs,
 } from "@material-ui/core";
 import { makeStyles, Theme } from "@material-ui/core/styles";
-import { Clear, GroupWork, SearchOutlined, Timeline } from "@material-ui/icons";
+import { Clear, SearchOutlined } from "@material-ui/icons";
 import { Alert, Pagination } from "@material-ui/lab";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { Subject } from "rxjs";
 import { fromFetch } from "rxjs/fetch";
 import { debounceTime, switchMap, take } from "rxjs/operators";
@@ -25,44 +22,11 @@ export interface IKeyword {
 }
 
 interface IKeywordPanelProps {
-  selectedKeyword: string;
-  onSelectedKeywordChanged: (keyword: string) => void;
-}
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: any;
-  value: any;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`scrollable-auto-tabpanel-${index}`}
-      aria-labelledby={`scrollable-auto-tab-${index}`}
-      {...other}
-    >
-      {value === index && <div>{children}</div>}
-    </div>
-  );
-}
-
-function a11yProps(index: any) {
-  return {
-    id: `scrollable-auto-tab-${index}`,
-    "aria-controls": `scrollable-auto-tabpanel-${index}`,
-  };
+  selectedKeywords: string[];
+  onAddKeyword: (keyword: string) => void;
 }
 
 const useStyles = makeStyles((theme: Theme) => ({
-  tab: {
-    // minWidth: 100,
-    // width: 100,
-  },
   paper: {
     padding: theme.spacing(2),
     display: "flex",
@@ -87,12 +51,10 @@ export const KeyworPanel: React.FC<IKeywordPanelProps> = (
   const classes = useStyles();
 
   const [keywords, setKeywords] = useState<IKeyword[]>([]);
-  const [tabValue, setTabValue] = useState(0);
   const [searchValue, setSearchValue] = useState("");
   const [page, setPage] = useState(1);
   const [pageCount, setPageCount] = useState(10);
   const [searchPhrase$] = useState(new Subject<string>());
-  const prevPageRef = useRef<number>(1);
 
   const populateKeywordsBySearchPhrase = (
     searchPhrase: string,
@@ -129,13 +91,6 @@ export const KeyworPanel: React.FC<IKeywordPanelProps> = (
     populateKeywordsBySearchPhrase(searchValue, value);
   };
 
-  const handleTabChange = (
-    _event: React.ChangeEvent<{}>,
-    newTabValue: number
-  ) => {
-    setTabValue(newTabValue);
-  };
-
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(event.target.value);
     searchPhrase$.next(event.target.value);
@@ -164,78 +119,47 @@ export const KeyworPanel: React.FC<IKeywordPanelProps> = (
 
   return (
     <div>
-      <AppBar position="static" color="default">
-        <Tabs
-          value={tabValue}
-          onChange={handleTabChange}
-          variant="scrollable"
-          scrollButtons="off"
-          aria-label="scrollable prevent tabs example"
-        >
-          <Tab
-            icon={<GroupWork />}
-            {...a11yProps(0)}
-            classes={{ root: classes.tab }}
-          />
-          <Tab
-            icon={<Timeline />}
-            {...a11yProps(1)}
-            classes={{ root: classes.tab }}
-          />
-        </Tabs>
-      </AppBar>
-      <TabPanel value={tabValue} index={0}>
-        <Alert severity="info" className={classes.info}>
-          Select a topic and see related topic
-        </Alert>
-        <FormControl fullWidth className={classes.search}>
-          <InputLabel htmlFor="standard-adornment-search">Search</InputLabel>
-          <Input
-            id="standard-adornment-search"
-            value={searchValue}
-            onChange={handleSearchChange}
-            startAdornment={
-              <InputAdornment position="start">
-                <SearchOutlined />
-              </InputAdornment>
-            }
-            endAdornment={
-              <InputAdornment position="end">
-                <IconButton
-                  aria-label="clear keyword search"
-                  onClick={handleClickClearSearch}
-                >
-                  <Clear />
-                </IconButton>
-              </InputAdornment>
-            }
-          />
-        </FormControl>
-        <Paper className={classes.paper}>
-          <List component="nav">
-            {keywords.map((keyword) => (
-              <ListItem
-                key={keyword.name}
-                button
-                selected={props.selectedKeyword === keyword.name}
-                onClick={() => props.onSelectedKeywordChanged(keyword.name)}
+      <Alert severity="info" className={classes.info}>
+        Select a topic and see related topic
+      </Alert>
+      <FormControl fullWidth className={classes.search}>
+        <InputLabel htmlFor="standard-adornment-search">Search</InputLabel>
+        <Input
+          id="standard-adornment-search"
+          value={searchValue}
+          onChange={handleSearchChange}
+          startAdornment={
+            <InputAdornment position="start">
+              <SearchOutlined />
+            </InputAdornment>
+          }
+          endAdornment={
+            <InputAdornment position="end">
+              <IconButton
+                aria-label="clear keyword search"
+                onClick={handleClickClearSearch}
               >
-                <ListItemText primary={keyword.name} />
-              </ListItem>
-            ))}
-          </List>
-          <Pagination
-            count={pageCount}
-            page={page}
-            onChange={handlePageChange}
-          />
-        </Paper>
-      </TabPanel>
-      <TabPanel value={tabValue} index={1}>
-        <Alert severity="info" className={classes.info}>
-          See how selected topics are related
-        </Alert>
-      </TabPanel>
+                <Clear />
+              </IconButton>
+            </InputAdornment>
+          }
+        />
+      </FormControl>
+      <Paper className={classes.paper}>
+        <List component="nav">
+          {keywords.map((keyword) => (
+            <ListItem
+              key={keyword.name}
+              button
+              selected={props.selectedKeywords.includes(keyword.name)}
+              onClick={() => props.onAddKeyword(keyword.name)}
+            >
+              <ListItemText primary={keyword.name} />
+            </ListItem>
+          ))}
+        </List>
+        <Pagination count={pageCount} page={page} onChange={handlePageChange} />
+      </Paper>
     </div>
   );
 };
