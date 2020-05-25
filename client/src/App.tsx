@@ -141,11 +141,6 @@ export default function Dashboard() {
           >
             Discover how medical topics are related
           </Typography>
-          <IconButton color="inherit">
-            <Badge badgeContent={4} color="secondary">
-              <NotificationsIcon />
-            </Badge>
-          </IconButton>
         </Toolbar>
       </AppBar>
       <main className={classes.content}>

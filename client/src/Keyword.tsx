@@ -115,7 +115,7 @@ export const KeyworPanel: React.FC<IKeywordPanelProps> = (
     return () => {
       searchSubscription.unsubscribe();
     };
-  }, []);
+  }, [searchPhrase$]);
 
   return (
     <div>

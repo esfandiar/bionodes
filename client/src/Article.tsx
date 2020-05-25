@@ -1,14 +1,13 @@
 import {
+  Chip,
   List,
   ListItem,
+  ListItemSecondaryAction,
   ListItemText,
   makeStyles,
-  ListItemSecondaryAction,
-  Chip,
-  Paper,
 } from "@material-ui/core";
-import React, { useEffect, useState } from "react";
 import { Pagination } from "@material-ui/lab";
+import React, { useEffect, useState } from "react";
 import { IKeyword } from "./Keyword";
 
 export interface IArticle {
@@ -56,27 +55,29 @@ export const ArticlePanel: React.FC<IArticlePanelProps> = (
     value: number
   ) => {
     setPage(value);
-    getArticles(value);
-  };
-
-  const getArticles = async (pageNum) => {
-    if (props.selectedKeywords && props.selectedKeywords.length) {
-      const commaSeparatedKeywords = props.selectedKeywords.join(",");
-      const response = await fetch(
-        `http://localhost:5000/article/keywords/${commaSeparatedKeywords}?page=${pageNum}&page_size=10`
-      );
-      if (response.ok) {
-        const responseBody = await response.json();
-        setPageCount(Math.ceil(responseBody.count / 10));
-        setArticles(responseBody.articles);
-      } else {
-        console.log(response);
-      }
-    }
   };
 
   useEffect(() => {
-    getArticles(1);
+    const getArticles = async () => {
+      if (props.selectedKeywords && props.selectedKeywords.length) {
+        const commaSeparatedKeywords = props.selectedKeywords.join(",");
+        const response = await fetch(
+          `http://localhost:5000/article/keywords/${commaSeparatedKeywords}?page=${page}&page_size=10`
+        );
+        if (response.ok) {
+          const responseBody = await response.json();
+          setPageCount(Math.ceil(responseBody.count / 10));
+          setArticles(responseBody.articles);
+        } else {
+          console.log(response);
+        }
+      }
+    };
+    getArticles();
+  }, [page, props.selectedKeywords]);
+
+  useEffect(() => {
+    setPage(1);
   }, [props.selectedKeywords]);
 
   if (articles) {

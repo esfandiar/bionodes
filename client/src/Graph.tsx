@@ -53,7 +53,6 @@ export const GraphPanel: React.FC<IGraphProps> = (props: IGraphProps) => {
         }));
 
         setState({
-          ...state,
           graphData: { nodes: keywordNodes, links: paths },
         });
       } else {
