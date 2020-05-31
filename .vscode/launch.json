@@ -21,7 +21,11 @@
         "FLASK_ENV": "development",
         "FLASK_DEBUG": "0"
       },
-      "args": ["run", "--no-debugger", "--no-reload"]
+      "args": [
+        "run",
+        "--no-debugger",
+        "--no-reload"
+      ]
     },
     {
       "name": "Crawl",
@@ -33,7 +37,27 @@
         "FLASK_ENV": "development",
         "FLASK_DEBUG": "0"
       },
-      "args": ["crawl", "epidemiology", "--no-debugger", "--no-reload"]
+      "args": [
+        "crawl",
+        "epidemiology",
+        "--no-debugger",
+        "--no-reload"
+      ]
     },
+    {
+      "name": "Docker: Python - Flask",
+      "type": "docker",
+      "request": "launch",
+      "preLaunchTask": "docker-run: debug",
+      "python": {
+        "pathMappings": [
+          {
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/app"
+          }
+        ],
+        "projectType": "flask"
+      }
+    }
   ]
 }

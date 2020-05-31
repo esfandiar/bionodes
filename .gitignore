@@ -142,3 +142,4 @@ settings.json
 .vscode/spellright.dict
 
 db-files/
+docker-compose.debug.yml

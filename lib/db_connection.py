@@ -11,6 +11,6 @@ class DbConnection(object):
     def driver(cls):
         if cls._driver is None:
             cls._driver = GraphDatabase.driver(
-                "bolt://localhost:7687", auth=("neo4j", "bionodes"), encrypted=False
+                "bolt://db:7687", auth=("neo4j", "bionodes"), encrypted=False
             )
         return cls._driver

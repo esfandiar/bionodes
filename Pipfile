@@ -1,0 +1,22 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+flask = "*"
+flask-bcrypt = "*"
+neo4j = "*"
+pdfminer-six = "*"
+beautifulsoup4 = "*"
+flask-restx = "*"
+flask-cors = "*"
+gunicorn = "*"
+flask-script = "*"
+nltk = "*"
+requests = "*"
+
+[requires]
+python_version = "3.7"
