@@ -8,7 +8,6 @@ from api.main.service.article_service import (
 from api.main.util.dto import ArticleDto
 
 api = ArticleDto.api
-_article = ArticleDto.article
 _article_score = ArticleDto.article_score
 _article_count = ArticleDto.article_count
 

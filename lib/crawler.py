@@ -6,7 +6,7 @@ from typing import Iterator
 from bs4 import BeautifulSoup
 import nltk
 from nltk.corpus import stopwords
-from nltk.stem.wordnet import WordNetLemmatizer
+from nltk.stem.wordnet import WordNetLemmatizer, wordnet
 from pdfminer import high_level
 import requests
 
@@ -19,15 +19,13 @@ from lib.response_stream import ResponseStream
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-nltk.download("stopwords")
-nltk.download("wordnet")
-nltk.download("averaged_perceptron_tagger")
-stop_words = set(stopwords.words("english"))
-lem = WordNetLemmatizer()
-ignore_keywords = ["effectiveness", "measure", "countering", "model"]
-
 
 class Crawler:
+    ignore_keywords = ["effectiveness", "measure", "countering", "model"]
+    lem: WordNetLemmatizer = None
+    stop_words = set([])
+    nltk_loaded = False
+
     def __init__(self):
         pass
 
@@ -90,7 +88,9 @@ class Crawler:
             keywords = clean_title.split()
             # Remove the stop words
             keywords = [
-                lem.lemmatize(word) for word in keywords if word not in stop_words
+                Crawler.lem.lemmatize(word)
+                for word in keywords
+                if word not in Crawler.stop_words
             ]
             # Tag the words and only take the nouns
             tokens = nltk.word_tokenize(" ".join(keywords))
@@ -100,7 +100,8 @@ class Crawler:
             keywords = [
                 keyword
                 for keyword in keywords
-                if keyword not in ignore_keywords and not keyword.endswith("ing")
+                if keyword not in Crawler.ignore_keywords
+                and not keyword.endswith("ing")
             ]
 
         article = Article(
@@ -113,6 +114,15 @@ class Crawler:
 
     @staticmethod
     def crawl_and_get_articles_for_collection(collection: str) -> Iterator[Article]:
+        if not Crawler.nltk_loaded:
+            nltk.download("stopwords")
+            nltk.download("wordnet")
+            nltk.download("averaged_perceptron_tagger")
+            nltk.download("punkt")
+            Crawler.stop_words = set(stopwords.words("english"))
+            wordnet.ensure_loaded()
+            Crawler.lem = WordNetLemmatizer()
+            print("run******")
         collection_url = f"{constants.MEDRXIV_URL}/collection/{collection}"
         logger.warn("Crawling %s ...", collection_url)
         last_page = Crawler._get_last_page(collection_url)

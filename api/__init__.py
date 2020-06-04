@@ -1,9 +1,9 @@
-from flask_restx import Api
 from flask import Blueprint
-
-from api.main.controller.keyword_controller import api as keyword_ns
+from flask_restx import Api
 
 from api.main.controller.article_controller import api as article_ns
+from api.main.controller.crawler_controller import api as crawler_ns
+from api.main.controller.keyword_controller import api as keyword_ns
 
 blueprint = Blueprint("api", __name__)
 
@@ -16,3 +16,4 @@ api = Api(
 
 api.add_namespace(keyword_ns, path="/keyword")
 api.add_namespace(article_ns, path="/article")
+api.add_namespace(crawler_ns, path="/crawler")

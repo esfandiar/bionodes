@@ -1,0 +1,27 @@
+version: '3.4'
+
+services:
+  db:
+    image: neo4j
+    volumes:
+      - bionodes_db_data:/data
+      - bionodes_db_logs:/logs
+      - bionodes_db_import:/var/lib/neo4j/import
+      - bionodes_db_plugins:/plugins
+    environment:
+      - NEO4J_AUTH=neo4j/bionodes
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+
+  bionodes:
+    depends_on:
+      - db
+    images: 887840629137.dkr.ecr.us-east-1.amazonaws.com/bionodes
+    ports:
+      - "5000:5000"
+volumes:
+  bionodes_db_data: {}
+  bionodes_db_logs: {}
+  bionodes_db_import: {}
+  bionodes_db_plugins: {}
