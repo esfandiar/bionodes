@@ -66,18 +66,21 @@ class Crawler:
         keywords_string = re.findall("(?<=Keywords:)(.*)(?=\\n)", content)
         keywords = []
         if keywords_string:
-            keywords = [
+            keywords_semicolon = [
                 keyword.strip().lower()
                 for keyword in keywords_string[0].split(";")
                 if keyword.strip()
             ]
-            additional_keywords = [
+            keywords_colon = [
                 keyword.strip().lower()
                 for keyword in keywords_string[0].split(",")
                 if keyword.strip()
             ]
-            if set(keywords) != set(additional_keywords):
-                keywords.extend(additional_keywords)
+            keywords = (
+                keywords_semicolon
+                if len(keywords_semicolon) > len(keywords_colon)
+                else keywords_colon
+            )
         title = link.find("span").text
         if not keywords:
             clean_title = title.lower()
@@ -122,7 +125,6 @@ class Crawler:
             Crawler.stop_words = set(stopwords.words("english"))
             wordnet.ensure_loaded()
             Crawler.lem = WordNetLemmatizer()
-            print("run******")
         collection_url = f"{constants.MEDRXIV_URL}/collection/{collection}"
         logger.warn("Crawling %s ...", collection_url)
         last_page = Crawler._get_last_page(collection_url)
@@ -147,4 +149,4 @@ class Crawler:
         articles = Crawler.crawl_and_get_articles_for_collection(collection)
 
         for article in articles:
-            DbRepository.create_relationship_for_article(article)
+            DbRepository.create_relationship_for_article(article, collection)

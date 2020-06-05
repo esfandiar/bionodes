@@ -169,12 +169,27 @@ class DbRepository:
         return articles_count
 
     @staticmethod
-    def create_relationship_for_article(article: Article):
+    def create_relationship_for_article(article: Article, category: str):
         def execute_query(tx):
-            query_list = [
-                "MERGE (k:keyword {name:'" + keyword.name.replace("'", "\\'") + "'});"
-                for keyword in article.keywords
-            ]
+            query_list = ["MERGE (c:category {name:'" + category + "'});"]
+            query_list.extend(
+                [
+                    "MERGE (k:keyword {name:'"
+                    + keyword.name.replace("'", "\\'")
+                    + "'});"
+                    for keyword in article.keywords
+                ]
+            )
+            query_list.extend(
+                [
+                    "MATCH (c:category {name:'"
+                    + category
+                    + "'}), (k:keyword {name:'"
+                    + keyword.name.replace("'", "\\'")
+                    + "'}) CREATE (k)-[:has_category]->(c);"
+                    for keyword in article.keywords
+                ]
+            )
             query_list.append(
                 "MERGE (k:article {title:'"
                 + article.title.replace("'", "\\'")
@@ -182,6 +197,7 @@ class DbRepository:
                 + article.url
                 + "'});"
             )
+
             for i in range(0, len(article.keywords)):
                 for j in range(i + 1, len(article.keywords)):
                     query = (
@@ -198,6 +214,13 @@ class DbRepository:
                     + "'}), (a:article {url:'"
                     + article.url
                     + "'}) CREATE (a)-[:has_keyword]->(k);"
+                )
+                query_list.append(
+                    "MATCH (c:category {name:'"
+                    + category
+                    + "'}), (a:article {url:'"
+                    + article.url
+                    + "'}) CREATE (a)-[:has_category]->(c);"
                 )
 
             for query in query_list:
