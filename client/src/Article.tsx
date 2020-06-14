@@ -6,7 +6,7 @@ import {
   ListItemText,
   makeStyles,
 } from "@material-ui/core";
-import { Pagination } from "@material-ui/lab";
+import { Pagination, Alert } from "@material-ui/lab";
 import React, { useEffect, useState } from "react";
 import { IKeyword } from "./Keyword";
 
@@ -80,9 +80,22 @@ export const ArticlePanel: React.FC<IArticlePanelProps> = (
     setPage(1);
   }, [props.selectedKeywords]);
 
+  const articlesTitle = () => {
+    if (props.selectedKeywords && props.selectedKeywords.length) {
+      return (
+        <Alert severity="info">
+          <div>List of articles for {props.selectedKeywords.join(", ")}</div>
+        </Alert>
+      );
+    } else {
+      return <div></div>;
+    }
+  };
+
   if (articles) {
     return (
       <div>
+        {articlesTitle()}
         <List>
           {articles.map((article, index) => (
             <ListItem
