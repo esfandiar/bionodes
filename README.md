@@ -87,6 +87,12 @@ We suggest that you begin by typing:
   yarn start
 ```
 
+### Deploy Client
+
+```shell
+aws s3 sync build s3://bionodes-ui
+```
+
 ## Docker
 
 Login to ECR
