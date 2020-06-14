@@ -10,6 +10,24 @@ Start Neo4j:
 docker run --name db -p 7474:7474 -p 7687:7687 -d -v $(PWD)/db-files/data:/data -v $(PWD)/db-files/logs:/logs -v $(PWD)/db-files/import:/var/lib/neo4j/import -v $(PWD)/db-files/plugins:/plugins --env NEO4J_AUTH=neo4j/bionodes --restart=always --network=bionodes neo4j:latest
 ```
 
+Back up
+
+```shell
+docker run -it --name db -p 7474:7474 -p 7687:7687 -v $(PWD)/db-files/data:/data -v $(PWD)/db-files/logs:/logs -v $(PWD)/db-files/import:/var/lib/neo4j/import -v $(PWD)/db-files/plugins:/plugins --env NEO4J_AUTH=neo4j/bionodes neo4j:latest /bin/bash
+
+bin/neo4j-admin dump --database=neo4j --to=/var/lib/neo4j/import/backup-20200507.dump
+```
+
+Restore
+
+```shell
+docker run -it --name db -p 7474:7474 -p 7687:7687 -v $(PWD)/db-files/data:/data -v $(PWD)/db-files/logs:/logs -v $(PWD)/db-files/import:/var/lib/neo4j/import -v $(PWD)/db-files/plugins:/plugins --env NEO4J_AUTH=neo4j/bionodes neo4j:latest /bin/bash
+
+mkdir /data/transactions
+
+bin/neo4j-admin load --from=/var/lib/neo4j/import/backup-20200507.dump --database=neo4j --force
+```
+
 Neo4j Web UI: <http://localhost:7474>
 
 ## API

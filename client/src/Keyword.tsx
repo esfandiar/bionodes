@@ -120,7 +120,8 @@ export const KeyworPanel: React.FC<IKeywordPanelProps> = (
   return (
     <div>
       <Alert severity="info" className={classes.info}>
-        Select a topic and see related topic
+        <div>Select a topic and see related topic</div>
+        <div>Select multiple topics to see the relationship between them</div>
       </Alert>
       <FormControl fullWidth className={classes.search}>
         <InputLabel htmlFor="standard-adornment-search">Search</InputLabel>

@@ -21,7 +21,71 @@ logger.setLevel(logging.DEBUG)
 
 
 class Crawler:
-    ignore_keywords = ["effectiveness", "measure", "countering", "model"]
+    ignore_keywords = [
+        "effectiveness",
+        "measure",
+        "countering",
+        "model",
+        "analysis",
+        "study",
+        "case",
+        "state",
+        "effect",
+        "time",
+        "impact",
+        "control",
+        "review",
+        "health",
+        "association",
+        "factor",
+        "strategy",
+        "number",
+        "estimation",
+        "estimate",
+        "incidence",
+        "meta",
+        "level",
+        "care",
+        "outcome",
+        "test",
+        "response",
+        "detection",
+        "application",
+        "use",
+        "approach",
+        "implication",
+        "year",
+        "method",
+        "result",
+        "assessment",
+        "pattern",
+        "r",
+        "role",
+        "system",
+        "tool",
+        "process",
+        "u",
+        "value",
+        "e",
+        "challenge",
+        "function",
+        "unit",
+        "order",
+        "b",
+        "site",
+        "recommendation",
+        "option",
+        "part",
+        "line",
+        "basis",
+        "need",
+        "total",
+        "count",
+        "end",
+        "key",
+        "style",
+        "abcd",
+    ]
     lem: WordNetLemmatizer = None
     stop_words = set([])
     nltk_loaded = False
@@ -104,6 +168,7 @@ class Crawler:
                 keyword
                 for keyword in keywords
                 if keyword not in Crawler.ignore_keywords
+                and len(keyword) > 1
                 and not keyword.endswith("ing")
             ]
 

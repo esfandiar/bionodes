@@ -139,7 +139,7 @@ export default function Dashboard() {
             noWrap
             className={classes.title}
           >
-            Discover how medical topics are related
+            Discover relationships among medical topics
           </Typography>
         </Toolbar>
       </AppBar>
