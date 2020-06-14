@@ -116,7 +116,7 @@ docker push 887840629137.dkr.ecr.us-east-1.amazonaws.com/bionodes
 Run container
 
 ```shell
-docker run --name bionodes-api -p 5000:5000 -d --restart=always --network=bionodes 887840629137.dkr.ecr.us-east-1.amazonaws.com/bionodes
+docker run --name bionodes-api -e DB_SERVER=db -p 5000:5000 -d --restart=always --network=bionodes 887840629137.dkr.ecr.us-east-1.amazonaws.com/bionodes
 ```
 
 Create network
