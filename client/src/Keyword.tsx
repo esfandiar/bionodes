@@ -62,7 +62,7 @@ export const KeyworPanel: React.FC<IKeywordPanelProps> = (
   ) => {
     if (searchPhrase && searchPhrase.length) {
       fromFetch(
-        `http://localhost:5000/keyword/search/${searchPhrase}?page=${pageNum}&page_size=10`
+        `${process.env.REACT_APP_API_URL}/keyword/search/${searchPhrase}?page=${pageNum}&page_size=10`
       )
         .pipe(switchMap((response) => response.json()))
         .pipe(take(1))
@@ -72,7 +72,7 @@ export const KeyworPanel: React.FC<IKeywordPanelProps> = (
         });
     } else {
       fromFetch(
-        `http://localhost:5000/keyword/all?page=${pageNum}&page_size=10`
+        `${process.env.REACT_APP_API_URL}/keyword/all?page=${pageNum}&page_size=10`
       )
         .pipe(switchMap((response) => response.json()))
         .pipe(take(1))

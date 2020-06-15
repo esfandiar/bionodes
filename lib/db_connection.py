@@ -12,7 +12,7 @@ class DbConnection(object):
     def driver(cls):
         if cls._driver is None:
             DB_SERVER = os.environ.get("DB_SERVER")
-            db_server = DB_SERVER if DB_SERVER else "localhost"
+            db_server = DB_SERVER if DB_SERVER else "db"
             cls._driver = GraphDatabase.driver(
                 f"bolt://{db_server}:7687", auth=("neo4j", "bionodes"), encrypted=False
             )

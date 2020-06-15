@@ -62,7 +62,7 @@ export const ArticlePanel: React.FC<IArticlePanelProps> = (
       if (props.selectedKeywords && props.selectedKeywords.length) {
         const commaSeparatedKeywords = props.selectedKeywords.join(",");
         const response = await fetch(
-          `http://localhost:5000/article/keywords/${commaSeparatedKeywords}?page=${page}&page_size=10`
+          `${process.env.REACT_APP_API_URL}/article/keywords/${commaSeparatedKeywords}?page=${page}&page_size=10`
         );
         if (response.ok) {
           const responseBody = await response.json();

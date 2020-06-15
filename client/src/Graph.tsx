@@ -19,7 +19,7 @@ export const GraphPanel: React.FC<IGraphProps> = (props: IGraphProps) => {
   useEffect(() => {
     async function getGraphForKeyword(commaSeparatedKeywords) {
       const response = await fetch(
-        `http://localhost:5000/keyword/connections/${commaSeparatedKeywords}?max_level=1`
+        `${process.env.REACT_APP_API_URL}/keyword/connections/${commaSeparatedKeywords}?max_level=1`
       );
       if (response.ok) {
         const returnedKeywordPaths: IKeyword[][] = await response.json();
