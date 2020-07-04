@@ -1,0 +1,3 @@
+name: bionodes
+runtime: nodejs
+description: Infrastructure code for Bionodes on AWS
