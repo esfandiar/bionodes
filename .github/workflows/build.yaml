@@ -46,7 +46,7 @@ jobs:
           CI: false
 
       - name: Deploy to S3
-        run: aws s3 sync build s3://bionodes-ui --delete
+        run: aws s3 sync build s3://bionodes-ui-42c1c5c --delete
         working-directory: client
 
   build-and-push-lib-api-image:
