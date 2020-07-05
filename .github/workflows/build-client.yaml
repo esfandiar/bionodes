@@ -1,7 +1,9 @@
-name: Building and pushing a docker image to Amazon ECR
+name: Building and pushing React client to S3
 
 on:
   push:
+    paths:
+      - "client/**"
     branches:
       - master
 
@@ -48,27 +50,3 @@ jobs:
       - name: Deploy to S3
         run: aws s3 sync build s3://bionodes-ui-42c1c5c --delete
         working-directory: client
-
-  build-and-push-lib-api-image:
-    name: Building and pushing image to AWS ECR
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@master
-
-      - name: Setup ECR
-        run: |
-          $( aws ecr get-login --no-include-email )
-
-      - name: Build and tag the image
-        run: |
-          docker build \
-            -t $CONTAINER_IMAGE \
-            -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CONTAINER_IMAGE .
-
-      - name: Push
-        if: github.ref == 'refs/heads/master'
-        run: |
-          docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CONTAINER_IMAGE
-
-  
