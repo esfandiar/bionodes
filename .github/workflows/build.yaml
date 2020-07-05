@@ -2,8 +2,8 @@ name: Building and pushing a docker image to Amazon ECR
 
 on:
   push:
-    branches:         
-    - master   
+    branches:
+      - master
 
 env:
   AWS_DEFAULT_REGION: us-east-1
@@ -17,37 +17,40 @@ jobs:
   build-client:
     name: Build React
     runs-on: ubuntu-latest
+    paths:
+      - "client"
     steps:
+      - name: Checkout
+        uses: actions/checkout@master
 
-    - name: Checkout
-      uses: actions/checkout@master
-
-    - name: Yarn build
-      run: |
-        yarn build
+      - name: Yarn build
+        run: yarn build
+        working-directory: client
 
   build-and-push-lib-api-image:
     name: Building and pushing image to AWS ECR
     runs-on: ubuntu-latest
+    paths:
+      - "lib"
+      - "api"
     steps:
+      - name: Checkout
+        uses: actions/checkout@master
 
-    - name: Checkout
-      uses: actions/checkout@master
+      - name: Setup ECR
+        run: |
+          $( aws ecr get-login --no-include-email )
 
-    - name: Setup ECR
-      run: |
-        $( aws ecr get-login --no-include-email )
+      - name: Build and tag the image
+        run: |
+          docker build \
+            -t $CONTAINER_IMAGE \
+            -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CONTAINER_IMAGE .
 
-    - name: Build and tag the image
-      run: |
-        docker build \
-          -t $CONTAINER_IMAGE \
-          -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CONTAINER_IMAGE .
-
-    - name: Push
-      if: github.ref == 'refs/heads/master'
-      run: |
-        docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CONTAINER_IMAGE
+      - name: Push
+        if: github.ref == 'refs/heads/master'
+        run: |
+          docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CONTAINER_IMAGE
 
   pulumi-up:
     name: Update
