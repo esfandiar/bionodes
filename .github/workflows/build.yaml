@@ -17,8 +17,6 @@ jobs:
   build-client:
     name: Build React
     runs-on: ubuntu-latest
-    paths:
-      - "client"
     steps:
       - name: Checkout
         uses: actions/checkout@master
@@ -30,9 +28,6 @@ jobs:
   build-and-push-lib-api-image:
     name: Building and pushing image to AWS ECR
     runs-on: ubuntu-latest
-    paths:
-      - "lib"
-      - "api"
     steps:
       - name: Checkout
         uses: actions/checkout@master
