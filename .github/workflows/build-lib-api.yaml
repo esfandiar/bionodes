@@ -5,6 +5,7 @@ on:
     paths:
       - "lib/**"
       - "api/**"
+      - ".github/workflows/build-lib-api.yaml"
     branches:
       - master
 
@@ -50,4 +51,4 @@ jobs:
             $( aws ecr get-login --no-include-email )
             docker stop bionodes-api
             docker rm bionodes-api
-            docker run --name bionodes-api -p 5000:5000 -d --restart=always --network=bionodes 887840629137.dkr.ecr.us-east-1.amazonaws.com/bionodes
+            docker run --name bionodes-api -p 5000:5000 -d --restart=always --network=bionodes $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$CONTAINER_IMAGE
