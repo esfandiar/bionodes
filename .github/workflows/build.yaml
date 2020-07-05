@@ -24,6 +24,8 @@ jobs:
       - name: Yarn build
         run: yarn && yarn build
         working-directory: client
+        env:
+          CI: false
 
   build-and-push-lib-api-image:
     name: Building and pushing image to AWS ECR
