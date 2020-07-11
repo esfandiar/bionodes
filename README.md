@@ -145,6 +145,8 @@ docker network create bionodes
 
 docker run --name db -p 7474:7474 -p 7687:7687 -d -v $(PWD)/db-data/data:/data -v $(PWD)/db-data/logs:/logs -v $(PWD)/db-data/import:/var/lib/neo4j/import -v $(PWD)/db-data/plugins:/plugins --env NEO4J_AUTH=neo4j/bionodes --restart=always --network=bionodes neo4j:latest
 
+docker run --name db -p 7474:7474 -p 7687:7687 -d -v /mnt/efs/fs1/db/db-data:/data -v /mnt/efs/fs1/db/logs:/logs --env NEO4J_AUTH=neo4j/bionodes --user 1000:1000 --restart=always --network=bionodes neo4j:latest
+
 aws configure
 
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 887840629137.dkr.ecr.us-east-1.amazonaws.com

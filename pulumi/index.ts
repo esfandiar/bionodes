@@ -61,24 +61,39 @@ let bucketPolicy = new aws.s3.BucketPolicy("bucketPolicy", {
 // });
 export = async () => {
     // VPC
-    const vpc = new awsx.ec2.Vpc("vpc", { subnets: [{ type: "private" }, { type: "public" }] });
+    const vpc = new awsx.ec2.Vpc("vpc", {
+        subnets: [{ type: "private" }, { type: "public" }],
+    });
     const subnetIds = await vpc.publicSubnetIds;
 
     // EFS
     const filesystem = new aws.efs.FileSystem("filesystem");
     const targets = [];
     for (let i = 0; i < subnetIds.length; i++) {
-        targets.push(new aws.efs.MountTarget(`fs-mount-${i}`, {
-            fileSystemId: filesystem.id,
-            subnetId: subnetIds[i],
-            securityGroups: [vpc.vpc.defaultSecurityGroupId],
-        }));
+        targets.push(
+            new aws.efs.MountTarget(`fs-mount-${i}`, {
+                fileSystemId: filesystem.id,
+                subnetId: subnetIds[i],
+                securityGroups: [vpc.vpc.defaultSecurityGroupId],
+            })
+        );
     }
-    const ap = new aws.efs.AccessPoint("ap", {
-        fileSystemId: filesystem.id,
-        posixUser: { uid: 1000, gid: 1000 },
-        rootDirectory: { path: "/db-data", creationInfo: { ownerGid: 1000, ownerUid: 1000, permissions: "755" } },
-    }, { dependsOn: targets });
+    const ap = new aws.efs.AccessPoint(
+        "ap",
+        {
+            fileSystemId: filesystem.id,
+            posixUser: { uid: 1000, gid: 1000 },
+            rootDirectory: {
+                path: "/db",
+                creationInfo: {
+                    ownerGid: 1000,
+                    ownerUid: 1000,
+                    permissions: "755",
+                },
+            },
+        },
+        { dependsOn: targets }
+    );
 
     // ECS Cluster
     const cluster = new awsx.ecs.Cluster("cluster", { vpc: vpc });
@@ -86,7 +101,7 @@ export = async () => {
         fileSystemId: filesystem.id,
         authorizationConfig: { accessPointId: ap.id },
         transitEncryption: "ENABLED",
-        rootDirectory: "/db-data",
+        rootDirectory: "/db",
     };
 
     // Fargate Task
@@ -95,9 +110,23 @@ export = async () => {
             db: {
                 image: "neo4j",
                 memory: 1024,
-                portMappings: [{ hostPort: 7474, containerPort: 7474, protocol: "tcp" }, { hostPort: 7687, containerPort: 7687, protocol: "tcp" }],
-                environment: [{ name: "NEO4J_AUTH", value: "neo4j/bionodes" }, { name: "NEO4J_dbms_directories_data", value: "/db-data" }],
-                mountPoints: [{ containerPath: "/db-data", sourceVolume: "efs" }],
+                portMappings: [
+                    { hostPort: 7474, containerPort: 7474, protocol: "tcp" },
+                    { hostPort: 7687, containerPort: 7687, protocol: "tcp" },
+                ],
+                environment: [
+                    { name: "NEO4J_AUTH", value: "neo4j/bionodes" },
+                    {
+                        name: "NEO4J_dbms_directories_data",
+                        value: "/db/db-data",
+                    },
+                    {
+                        name: "NEO4J_dbms_logs_debug_path",
+                        value: "/db/logs/debug.log",
+                    },
+                ],
+                mountPoints: [{ containerPath: "/db", sourceVolume: "efs" }],
+                user: "1000:1000",
             },
             bionodesCrawler: {
                 image: "887840629137.dkr.ecr.us-east-1.amazonaws.com/bionodes",
@@ -109,23 +138,27 @@ export = async () => {
         },
         volumes: [{ name: "efs", efsVolumeConfiguration }],
         vpc: vpc,
-    },
-    );
+    });
 
     const api = new awsx.apigateway.API("bionodes", {
-        routes: [{
-            path: "/crawl",
-            method: "GET",
-            eventHandler: async (req) => {
-                // Anytime someone hits the /hello endpoint, schedule our task.
-                try {
-                    const result = await crawler.run({ cluster: cluster, platformVersion: "1.4.0" });
-                    return { statusCode: 200, body: "OK" };
-                } catch (ex) {
-                    return { statusCode: 400, body: ex }
-                }
+        routes: [
+            {
+                path: "/crawl",
+                method: "GET",
+                eventHandler: async (req) => {
+                    // Anytime someone hits the /hello endpoint, schedule our task.
+                    try {
+                        const result = await crawler.run({
+                            cluster: cluster,
+                            platformVersion: "1.4.0",
+                        });
+                        return { statusCode: 200, body: "OK" };
+                    } catch (ex) {
+                        return { statusCode: 400, body: ex };
+                    }
+                },
             },
-        }],
+        ],
     });
 };
 
