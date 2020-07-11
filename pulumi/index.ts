@@ -30,35 +30,10 @@ let siteBucket = new aws.s3.Bucket("bionodes-ui", {
 
 // Set the access policy for the bucket so all objects are readable
 let bucketPolicy = new aws.s3.BucketPolicy("bucketPolicy", {
-    bucket: siteBucket.bucket, // depends on siteBucket -- see explanation below
+    bucket: siteBucket.bucket,
     policy: siteBucket.bucket.apply(publicReadPolicyForBucket),
-    // transform the siteBucket.bucket output property -- see explanation below
 });
 
-// const amazonLinux = pulumi.output(aws.getAmi({
-//     filters: [
-//         {
-//             name: "name",
-//             values: ["amzn2-ami-hvm-*-x86_64-gp2"],
-//         },
-//         {
-//             name: "virtualization-type",
-//             values: ["hvm"],
-//         },
-//     ],
-//     mostRecent: true,
-//     owners: ["137112412989"], // Amazon
-// }, { async: true }));
-// const crawler = new aws.ec2.Instance("crawler", {
-//     ami: amazonLinux.id,
-//     instanceType: "c5.2xlarge",
-//     subnetId: "subnet-05292b59",
-//     availabilityZone: "us-east-1a",
-//     keyName: "bionodes",
-//     tags: {
-//         Name: "bionodes-crawler",
-//     },
-// });
 export = async () => {
     // VPC
     const vpc = new awsx.ec2.Vpc("vpc", {
@@ -107,31 +82,14 @@ export = async () => {
     // Fargate Task
     const crawler = new awsx.ecs.FargateTaskDefinition("crawler", {
         containers: {
-            db: {
-                image: "neo4j",
-                memory: 1024,
-                portMappings: [
-                    { hostPort: 7474, containerPort: 7474, protocol: "tcp" },
-                    { hostPort: 7687, containerPort: 7687, protocol: "tcp" },
-                ],
-                environment: [
-                    { name: "NEO4J_AUTH", value: "neo4j/bionodes" },
-                    {
-                        name: "NEO4J_dbms_directories_data",
-                        value: "/db/db-data",
-                    },
-                    {
-                        name: "NEO4J_dbms_logs_debug_path",
-                        value: "/db/logs/debug.log",
-                    },
-                ],
-                mountPoints: [{ containerPath: "/db", sourceVolume: "efs" }],
-                user: "1000:1000",
-            },
             bionodesCrawler: {
                 image: "887840629137.dkr.ecr.us-east-1.amazonaws.com/bionodes",
-                environment: [{ name: "DB_SERVER", value: "localhost" }],
-                dependsOn: [{ containerName: "db", condition: "START" }],
+                environment: [
+                    {
+                        name: "DB_SERVER",
+                        value: "18.234.178.208",
+                    },
+                ],
                 command: ["python", "manage.py", "crawl", "epidemiology"],
                 memory: 8000,
             },
@@ -146,7 +104,6 @@ export = async () => {
                 path: "/crawl",
                 method: "GET",
                 eventHandler: async (req) => {
-                    // Anytime someone hits the /hello endpoint, schedule our task.
                     try {
                         const result = await crawler.run({
                             cluster: cluster,
