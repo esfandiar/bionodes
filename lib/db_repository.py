@@ -169,6 +169,21 @@ class DbRepository:
         return articles_count
 
     @staticmethod
+    def get_article_by_url(url: str) -> Article:
+        articles = []
+
+        def execute_query(tx):
+            query = "match (a:article)" + f" where a.url = '{url}'" + " return a"
+            for record in tx.run(query):
+                article_record = record["a"]
+                articles.append(article_record)
+
+        with DbConnection.driver().session() as session:
+            session.read_transaction(execute_query)
+
+        return None if not articles else articles[0]
+
+    @staticmethod
     def create_relationship_for_article(article: Article, category: str):
         def execute_query(tx):
             query_list = ["MERGE (c:category {name:'" + category + "'});"]

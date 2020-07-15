@@ -123,8 +123,7 @@ class Crawler:
 
     @staticmethod
     def _crawl_and_get_article_for_url(link) -> Article:
-        article_href = link.get("href")
-        full_article_url = f"{constants.MEDRXIV_URL}{article_href}"
+        full_article_url = Crawler._get_pdf_link_from_href(link)
         pdf_url = f"{full_article_url}.full.pdf"
         content = Crawler._extract_raw_text(pdf_url)
         keywords_string = re.findall("(?<=Keywords:)(.*)(?=\\n)", content)
@@ -181,6 +180,11 @@ class Crawler:
         return article
 
     @staticmethod
+    def _get_pdf_link_from_href(href) -> str:
+        article_href = href.get("href")
+        return f"{constants.MEDRXIV_URL}{article_href}"
+
+    @staticmethod
     def crawl_and_get_articles_for_collection(collection: str) -> Iterator[Article]:
         if not Crawler.nltk_loaded:
             nltk.download("stopwords")
@@ -203,11 +207,24 @@ class Crawler:
             soup = BeautifulSoup(html, "html.parser")
 
             links = soup.find_all("a", {"class": "highwire-cite-linked-title"})
+            new_links = [
+                link
+                for link in links
+                if DbRepository.get_article_by_url(
+                    Crawler._get_pdf_link_from_href(link)
+                )
+                is None
+            ]
 
-            with concurrent.futures.ThreadPoolExecutor(len(links)) as executor:
-                articles = executor.map(Crawler._crawl_and_get_article_for_url, links)
-                for article in articles:
-                    yield article
+            print(f"Number of new links: {len(new_links)}")
+
+            if new_links:
+                with concurrent.futures.ThreadPoolExecutor(len(new_links)) as executor:
+                    articles = executor.map(
+                        Crawler._crawl_and_get_article_for_url, new_links
+                    )
+                    for article in articles:
+                        yield article
 
     @staticmethod
     def crawl_and_save_articles_and_keywords(collection: str):
