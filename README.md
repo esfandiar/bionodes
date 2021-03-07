@@ -9,7 +9,7 @@ The goal of this project is to help medical scientists and researchers find asso
 ### Prerequisites
 
 * Docker
-* Conda
+* Conda (only if you want to do development on API or use it without docker)
 * Node.js
 * Yarn
 * DBeaver (optional)
